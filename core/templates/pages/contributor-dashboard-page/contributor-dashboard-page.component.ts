@@ -115,10 +115,13 @@ export class ContributorDashboardPageComponent
     return activeTabDetail.customizationOptions.includes('topic') ||
       (
         activeTabType === 'reviews' &&
-        activeSuggestionType === 'translate_content' &&
-        this.activeTabName !== 'submitQuestionTab'
+        (
+          this.activeTabName === 'submitQuestionTab' ||
+          this.activeTabName === 'translateTextTab'
+        )
       );
   }
+
 
   getLanguageDescriptions(languageCodes: string[]): string[] {
     const languageDescriptions: string[] = [];
