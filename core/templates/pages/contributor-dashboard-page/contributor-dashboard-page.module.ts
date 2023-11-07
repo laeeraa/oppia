@@ -34,6 +34,9 @@ import { TranslationLanguageSelectorComponent } from
 import { ReviewTranslationLanguageSelectorComponent } from './translation-language-selector/review-translation-language-selector.component';
 import { TranslationTopicSelectorComponent } from
   './translation-topic-selector/translation-topic-selector.component';
+import { QuestionTopicSelectorComponent } from 
+  './question-topic-selector/question-topic-selector.component';
+
 import { LoginRequiredMessageComponent } from './login-required-message/login-required-message.component';
 import { LoginRequiredModalContent } from './modal-templates/login-required-modal.component';
 import { SmartRouterModule } from 'hybrid-router-module-provider';
@@ -86,6 +89,7 @@ import { AppErrorHandlerProvider } from 'pages/oppia-root/app-error-handler';
     TranslationModalComponent,
     ContributionsAndReview,
     QuestionOpportunitiesComponent,
+    QuestionTopicSelectorComponent,
     ContributorDashboardPageComponent,
     ContributorBadgesComponent
   ],
@@ -106,6 +110,7 @@ import { AppErrorHandlerProvider } from 'pages/oppia-root/app-error-handler';
     TranslationModalComponent,
     ContributionsAndReview,
     QuestionOpportunitiesComponent,
+    QuestionTopicSelectorComponent,
     ContributorDashboardPageComponent
   ],
   providers: [

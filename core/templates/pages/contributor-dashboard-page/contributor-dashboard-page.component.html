@@ -98,12 +98,12 @@
               </div>
             </div>
             <div class="oppia-dropdown-container"
-                 *ngIf="showTopicSelector()">
+                 *ngIf="showTranslationTopicSelector()">
               <div class="oppia-dashboard-topic-container">
                 <span class="oppia-dashboard-topic-container-label">Filter by Topic</span>
                 <translation-topic-selector class="oppia-topic-selector"
                                             [activeTopicName]="topicName"
-                                            (setActiveTopicName)="onChangeTopic($event)">
+                                            (setActiveTopicName)="onChangeTranslationTopic($event)">
                 </translation-topic-selector>
               </div>
             </div>
@@ -128,7 +128,7 @@
               </div>
             </div>
             <div class="oppia-dropdown-container"
-                 *ngIf="showLanguageSelector() || showTopicSelector()">
+                 *ngIf="showLanguageSelector() || showTranslationTopicSelector() || showQuestionTopicSelector()">
               <div class="oppia-dashboard-language-container"
                    *ngIf="showLanguageSelector()">
                 <div class="oppia-dashboard-language-container-label" tabindex="0">Translate to</div>
@@ -137,12 +137,20 @@
                                                (setActiveLanguageCode)="onChangeLanguage($event)">
                 </translation-language-selector>
               </div>
-              <div class="oppia-dashboard-topic-container" *ngIf="showTopicSelector()">
+              <div class="oppia-dashboard-topic-container" *ngIf="showTranslationTopicSelector()">
                 <div class="oppia-dashboard-topic-container-label" tabindex="0">Subject</div>
                 <translation-topic-selector class="oppia-topic-selector"
                                             [activeTopicName]="topicName"
-                                            (setActiveTopicName)="onChangeTopic($event)">
+                                            (setActiveTopicName)="onChangeTranslationTopic($event)">
                 </translation-topic-selector>
+              </div>
+              <div class="oppia-dashboard-topic-container" 
+                *ngIf="showQuestionTopicSelector()">
+                <span class="oppia-dashboard-topic-container-label">Filter by Topic</span>
+                <question-topic-selector class="oppia-topic-selector"
+                                            [activeTopicName]="topicName"
+                                            (setActiveTopicName)="onChangeTranslationTopic($event)">
+                </question-topic-selector>
               </div>
             </div>
           </div>

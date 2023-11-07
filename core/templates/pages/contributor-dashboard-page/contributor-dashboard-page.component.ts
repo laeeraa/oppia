@@ -29,6 +29,7 @@ import { LocalStorageService } from 'services/local-storage.service';
 import { TranslationLanguageService } from 'pages/exploration-editor-page/translation-tab/services/translation-language.service';
 import { TranslationTopicService } from 'pages/exploration-editor-page/translation-tab/services/translation-topic.service';
 import { UserService } from 'services/user.service';
+import { QuestionTopicService } from 'pages/exploration-editor-page/translation-tab/services/question-topic.service';
 
 @Component({
   selector: 'contributor-dashboard-page',
@@ -51,7 +52,8 @@ export class ContributorDashboardPageComponent
   tabsDetails!: ContributorDashboardTabsDetails;
   OPPIA_AVATAR_IMAGE_URL!: string;
   languageCode!: string;
-  topicName!: string;
+  translationTopicName!: string;
+  questionTopicName!: string;
   activeTabName!: string;
   // The following property is set to null when the
   // user is not logged in.
@@ -65,6 +67,7 @@ export class ContributorDashboardPageComponent
     private localStorageService: LocalStorageService,
     private translationLanguageService: TranslationLanguageService,
     private translationTopicService: TranslationTopicService,
+    private questionTopicService: QuestionTopicService,
     private urlInterpolationService: UrlInterpolationService,
     private userService: UserService,
   ) {}
@@ -99,29 +102,49 @@ export class ContributorDashboardPageComponent
     return activeTabDetail.customizationOptions.includes('language');
   }
 
-  onChangeTopic(topicName: string): void {
-    this.topicName = topicName;
-    this.translationTopicService.setActiveTopicName(this.topicName);
+  onChangeTranslationTopic(topicName: string): void {
+    this.translationTopicName = topicName;
+    this.translationTopicService.setActiveTopicName(this.translationTopicName);
     this.localStorageService.updateLastSelectedTranslationTopicName(
-      this.topicName);
+      this.translationTopicName);
   }
 
-  showTopicSelector(): boolean {
+  onChangeQuestionTopic(topicName: string): void {
+    this.questionTopicName = topicName;
+    this.questionTopicService.setActiveTopicName(this.questionTopicName);
+    this.localStorageService.updateLastSelectedTranslationTopicName(
+      this.questionTopicName);
+  }
+
+  showTranslationTopicSelector(): boolean {
     const activeTabDetail = this.tabsDetails[
       this.activeTabName as keyof ContributorDashboardTabsDetails];
     const activeSuggestionType =
       this.contributionAndReviewService.getActiveSuggestionType();
     const activeTabType = this.contributionAndReviewService.getActiveTabType();
+    console.log("TranslationTopicSelector"); 
+    console.log(activeTabType, this.activeTabName); 
     return activeTabDetail.customizationOptions.includes('topic') ||
       (
         activeTabType === 'reviews' &&
-        (
-          this.activeTabName === 'submitQuestionTab' ||
-          this.activeTabName === 'translateTextTab'
-        )
+        activeSuggestionType === 'translate_content' &&
+        this.activeTabName !== 'submitQuestionTab'
       );
   }
 
+  showQuestionTopicSelector(): boolean {
+    const activeTabDetail = this.tabsDetails[
+      this.activeTabName as keyof ContributorDashboardTabsDetails];
+    console.log("got here");
+    const activeSuggestionType =
+      this.contributionAndReviewService.getActiveSuggestionType();
+    const activeTabType = this.contributionAndReviewService.getActiveTabType();
+    console.log(activeTabType, this.activeTabName); 
+    return activeTabDetail.customizationOptions.includes('topic') ||
+      (
+        activeTabType === 'reviews' && this.activeTabName === 'submitQuestionTab'
+      );
+  }
 
   getLanguageDescriptions(languageCodes: string[]): string[] {
     const languageDescriptions: string[] = [];
@@ -204,14 +227,14 @@ export class ContributorDashboardPageComponent
             ContributorDashboardConstants.DEFAULT_OPPORTUNITY_TOPIC_NAME);
           return;
         }
-        this.topicName = topicNames[0];
+        this.translationTopicName = topicNames[0];
         if (
           prevSelectedTopicName &&
           topicNames.indexOf(prevSelectedTopicName) !== -1
         ) {
-          this.topicName = prevSelectedTopicName;
+          this.translationTopicName = prevSelectedTopicName;
         }
-        this.translationTopicService.setActiveTopicName(this.topicName);
+        this.translationTopicService.setActiveTopicName(this.translationTopicName);
       });
 
     this.activeTabName = 'myContributionTab';
