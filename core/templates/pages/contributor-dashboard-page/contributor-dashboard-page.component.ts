@@ -112,7 +112,7 @@ export class ContributorDashboardPageComponent
   onChangeQuestionTopic(topicName: string): void {
     this.questionTopicName = topicName;
     this.questionTopicService.setActiveTopicName(this.questionTopicName);
-    this.localStorageService.updateLastSelectedTranslationTopicName(
+    this.localStorageService.updateLastSelectedQuestionTopicName(
       this.questionTopicName);
   }
 
@@ -122,8 +122,6 @@ export class ContributorDashboardPageComponent
     const activeSuggestionType =
       this.contributionAndReviewService.getActiveSuggestionType();
     const activeTabType = this.contributionAndReviewService.getActiveTabType();
-    console.log("TranslationTopicSelector"); 
-    console.log(activeTabType, this.activeTabName); 
     return activeTabDetail.customizationOptions.includes('topic') ||
       (
         activeTabType === 'reviews' &&
@@ -135,13 +133,10 @@ export class ContributorDashboardPageComponent
   showQuestionTopicSelector(): boolean {
     const activeTabDetail = this.tabsDetails[
       this.activeTabName as keyof ContributorDashboardTabsDetails];
-    console.log("got here");
     const activeSuggestionType =
       this.contributionAndReviewService.getActiveSuggestionType();
     const activeTabType = this.contributionAndReviewService.getActiveTabType();
-    console.log(activeTabType, this.activeTabName); 
-    return activeTabDetail.customizationOptions.includes('topic') ||
-      (
+    return(
         activeTabType === 'reviews' && this.activeTabName === 'submitQuestionTab'
       );
   }
@@ -168,6 +163,10 @@ export class ContributorDashboardPageComponent
 
     const prevSelectedTopicName = (
       this.localStorageService.getLastSelectedTranslationTopicName());
+    
+    const prevSelectedQuestionTopicName = (
+      this.localStorageService.getLastSelectedQuestionTopicName());
+    console.log("\nPrevious Selected Question Topic \n",prevSelectedQuestionTopicName); 
 
     this.userService.getUserContributionRightsDataAsync().then(
       (userContributionRights) => {
@@ -219,11 +218,14 @@ export class ContributorDashboardPageComponent
       }
     });
 
+    //diese Funktion anpassen falls wir eine neue Variable für TopicNameswithSkills nehmen 
     this.contributionOpportunitiesService.getTranslatableTopicNamesAsync()
       .then((topicNames) => {
         // TODO(#15710): Set default active topic to 'All'.
         if (topicNames.length <= 0) {
           this.translationTopicService.setActiveTopicName(
+            ContributorDashboardConstants.DEFAULT_OPPORTUNITY_TOPIC_NAME);
+          this.questionTopicService.setActiveTopicName(
             ContributorDashboardConstants.DEFAULT_OPPORTUNITY_TOPIC_NAME);
           return;
         }
@@ -235,7 +237,17 @@ export class ContributorDashboardPageComponent
           this.translationTopicName = prevSelectedTopicName;
         }
         this.translationTopicService.setActiveTopicName(this.translationTopicName);
+
+        this.questionTopicName = topicNames[0]; 
+        if(
+          prevSelectedQuestionTopicName && 
+          topicNames.indexOf(prevSelectedQuestionTopicName) !== -1 
+        ){
+          this.questionTopicName = prevSelectedTopicName; 
+        }
+        this.questionTopicService.setActiveTopicName(this.questionTopicName); 
       });
+        
 
     this.activeTabName = 'myContributionTab';
 

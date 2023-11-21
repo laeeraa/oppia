@@ -57,6 +57,8 @@ export class LocalStorageService {
 
   LAST_SELECTED_TRANSLATION_TOPIC_NAME = ('last_selected_translation_topic');
 
+  LAST_SELECTED_QUESTION_TOPIC_NAME = ('last_selected_question_topic');
+
   HIDE_SIGN_UP_SECTION_PREFERENCE = ('hide_sign_up_section');
 
   /**
@@ -185,6 +187,16 @@ export class LocalStorageService {
     }
   }
 
+  updateLastSelectedQuestionTopicName(topicName: string): void {
+    if (this.isStorageAvailable()) {
+      // It is possible that storage does not exist or the user does not have
+      // permission to access it but this condition is already being checked by
+      // calling 'isStorageAvailable()' so the typecast is safe.
+      (this.storage as Storage).setItem(
+        this.LAST_SELECTED_QUESTION_TOPIC_NAME, topicName);
+    }
+  }
+
   /**
    * Retrieve the local save of the last selected topic for translation.
    * @returns {String} The local save of the last selected topic for
@@ -198,6 +210,18 @@ export class LocalStorageService {
         // by calling 'isStorageAvailable()' so the typecast is safe.
         (this.storage as Storage).getItem(
           this.LAST_SELECTED_TRANSLATION_TOPIC_NAME));
+    }
+    return null;
+  }
+
+  getLastSelectedQuestionTopicName(): string | null {
+    if (this.isStorageAvailable()) {
+      return (
+        // It is possible that storage does not exist or the user does not have
+        // permission to access it but this condition is already being checked
+        // by calling 'isStorageAvailable()' so the typecast is safe.
+        (this.storage as Storage).getItem(
+          this.LAST_SELECTED_QUESTION_TOPIC_NAME));
     }
     return null;
   }

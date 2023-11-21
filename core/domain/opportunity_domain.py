@@ -71,6 +71,7 @@ class SkillOpportunityDict(TypedDict):
     id: str
     skill_description: str
     question_count: int
+    topic_name: str
 
 
 class ExplorationOpportunitySummary:
@@ -269,7 +270,8 @@ class SkillOpportunity:
         self,
         skill_id: str,
         skill_description: str,
-        question_count: int
+        question_count: int, 
+        topic_name: str
     ) -> None:
         """Constructs a SkillOpportunity domain object.
 
@@ -281,6 +283,7 @@ class SkillOpportunity:
         self.id = skill_id
         self.skill_description = skill_description
         self.question_count = question_count
+        self.topic_name = topic_name
         self.validate()
 
     def validate(self) -> None:
@@ -311,7 +314,8 @@ class SkillOpportunity:
         return cls(
             skill_opportunity_dict['id'],
             skill_opportunity_dict['skill_description'],
-            skill_opportunity_dict['question_count'])
+            skill_opportunity_dict['question_count'], 
+            skill_opportunity_dict['topic_name'])
 
     def to_dict(self) -> SkillOpportunityDict:
         """Returns a copy of the object as a dictionary. It includes all
@@ -324,7 +328,8 @@ class SkillOpportunity:
         return {
             'id': self.id,
             'skill_description': self.skill_description,
-            'question_count': self.question_count
+            'question_count': self.question_count, 
+            'topic_name': self.topic_name
         }
 
 

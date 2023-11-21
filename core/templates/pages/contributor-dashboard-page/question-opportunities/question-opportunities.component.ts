@@ -31,6 +31,7 @@ import { ContextService } from 'services/context.service';
 import { ContributionOpportunitiesService } from '../services/contribution-opportunities.service';
 import { SiteAnalyticsService } from 'services/site-analytics.service';
 import { UserService } from 'services/user.service';
+import { QuestionTopicService } from 'pages/exploration-editor-page/translation-tab/services/question-topic.service';
 
 interface Opportunity {
   id: string;
@@ -67,6 +68,7 @@ export class QuestionOpportunitiesComponent implements OnInit {
     private questionUndoRedoService: QuestionUndoRedoService,
     private siteAnalyticsService: SiteAnalyticsService,
     private userService: UserService,
+    private questionTopicService: QuestionTopicService
   ) {}
 
   getPresentableOpportunitiesData(
@@ -132,7 +134,7 @@ export class QuestionOpportunitiesComponent implements OnInit {
   }> {
     return (
       this.contributionOpportunitiesService
-        .getMoreSkillOpportunitiesAsync().then(
+        .getMoreSkillOpportunitiesAsync(this.questionTopicService.getActiveTopicName()).then(
           this.getPresentableOpportunitiesData.bind(this)));
   }
 
@@ -142,7 +144,7 @@ export class QuestionOpportunitiesComponent implements OnInit {
   }> {
     return (
       this.contributionOpportunitiesService
-        .getSkillOpportunitiesAsync().then(
+        .getSkillOpportunitiesAsync(this.questionTopicService.getActiveTopicName()).then(
           this.getPresentableOpportunitiesData.bind(this)));
   }
 

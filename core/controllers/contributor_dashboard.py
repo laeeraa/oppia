@@ -142,14 +142,20 @@ class ContributionOpportunitiesHandler(
         assert self.normalized_request is not None
         search_cursor = self.normalized_request.get('cursor')
         language_code = self.normalized_request.get('language_code')
+        print("\n\n")
+        print(self.normalized_request)
 
         if opportunity_type == constants.OPPORTUNITY_TYPE_SKILL:
+            topic_name = self.normalized_request.get('topic_name')
+            print("\n\ntopic_name: ", topic_name)
+            topic_name="Subtraction"
             skill_opportunities, next_cursor, more = (
                 self._get_skill_opportunities_with_corresponding_topic_name(
-                    search_cursor))
+                    topic_name, search_cursor))
 
         elif opportunity_type == constants.OPPORTUNITY_TYPE_TRANSLATION:
             topic_name = self.normalized_request.get('topic_name')
+            print("\n\ntopic_name: ", topic_name)
             if language_code is None:
                 raise self.InvalidInputException
             translation_opportunities, next_cursor, more = (
@@ -170,7 +176,9 @@ class ContributionOpportunitiesHandler(
         self.render_json(self.values)
 
     def _get_skill_opportunities_with_corresponding_topic_name(
-        self, cursor: Optional[str]
+        self,         
+        topic_name: Optional[str],
+        cursor: Optional[str]
     ) -> Tuple[
         List[ClientSideSkillOpportunityDict], Optional[str], bool
     ]:
@@ -195,27 +203,41 @@ class ContributionOpportunitiesHandler(
         """
         # We want to focus attention on lessons that are part of a classroom.
         # See issue #12221.
-        classroom_topic_ids = []
-        for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
-            classroom_topic_ids.extend(classroom_dict['topic_ids'])
-        classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
-        # Associate each skill with one classroom topic name.
-        # TODO(#8912): Associate each skill/skill opportunity with all linked
-        # topics.
-        classroom_topic_skill_id_to_topic_name = {}
-        for topic in classroom_topics:
-            if topic is None:
-                continue
-            for skill_id in topic.get_all_skill_ids():
-                classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
+        skill_opportunities = []
+        topic_name = None
+        if(topic_name): 
+            topic = topic_fetchers.get_topic_by_name(topic_name)
+            print("Topic fetched: ", topic)
 
-        skill_opportunities, cursor, more = (
-            opportunity_services.get_skill_opportunities(cursor))
+            ids = []
+            if (topic): 
+                ids =  topic.get_all_skill_ids()
+                skill_opportunities = opportunity_services.get_skill_opportunities_by_ids(ids)
+                print(skill_opportunities)
+        else: 
+            classroom_topic_ids = []
+            for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
+                classroom_topic_ids.extend(classroom_dict['topic_ids'])
+            classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
+            # Associate each skill with one classroom topic name.
+            # TODO(#8912): Associate each skill/skill opportunity with all linked
+            # topics.
+            classroom_topic_skill_id_to_topic_name = {}
+            for topic in classroom_topics:
+                if topic is None:
+                    continue
+                for skill_id in topic.get_all_skill_ids():
+                    classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
+            
+            skill_opportunities, cursor, more = (
+                opportunity_services.get_skill_opportunities(cursor, topic_name))
+        
         opportunities: List[ClientSideSkillOpportunityDict] = []
         # Fetch opportunities until we have at least a page's worth that
         # correspond to a classroom or there are no more opportunities.
         while len(opportunities) < constants.OPPORTUNITIES_PAGE_SIZE:
             for skill_opportunity in skill_opportunities:
+                print(skill_opportunity)
                 if (
                         skill_opportunity.id
                         in classroom_topic_skill_id_to_topic_name):
@@ -240,10 +262,10 @@ class ContributionOpportunitiesHandler(
                     not more or
                     len(opportunities) >= constants.OPPORTUNITIES_PAGE_SIZE):
                 break
-            skill_opportunities, cursor, more = (
-                opportunity_services.get_skill_opportunities(cursor))
-
-        return opportunities, cursor, more
+            if( not topic_name): 
+                skill_opportunities, cursor, more = (
+                    opportunity_services.get_skill_opportunities(cursor, topic_name))
+            return opportunities, cursor, more
 
     def _get_translation_opportunity_dicts(
         self,
@@ -803,6 +825,27 @@ class TranslatableTopicNamesHandler(
     @acl_decorators.open_access
     def get(self) -> None:
         # Only published topics are translatable.
+        topic_summaries = topic_fetchers.get_published_topic_summaries()
+        topic_names = [summary.name for summary in topic_summaries]
+        self.values = {
+            'topic_names': topic_names
+        }
+        self.render_json(self.values)
+
+# these to Handlers could be merged into each other, 
+# renaming the TranslatableTopicsHandler to "PublishedTopicNamesHandler"
+class SkillTopicNamesHandler(
+    base.BaseHandler[Dict[str, str], Dict[str, str]]
+):
+    """Provides names of all topics linked to skills in the datastore."""
+
+    GET_HANDLER_ERROR_RETURN_TYPE = feconf.HANDLER_TYPE_JSON
+    URL_PATH_ARGS_SCHEMAS: Dict[str, str] = {}
+    HANDLER_ARGS_SCHEMAS: Dict[str, Dict[str, str]] = {'GET': {}}
+
+    @acl_decorators.open_access
+    def get(self) -> None:
+        # Only published topics can contain Skill Opportunities 
         topic_summaries = topic_fetchers.get_published_topic_summaries()
         topic_names = [summary.name for summary in topic_summaries]
         self.values = {

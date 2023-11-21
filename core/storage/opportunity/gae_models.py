@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from core.platform import models
 
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Dict, Optional, Sequence, Tuple, List
 
 MYPY = False
 if MYPY: # pragma: no cover
@@ -137,14 +137,14 @@ class ExplorationOpportunitySummaryModel(base_models.BaseModel):
 
         if topic_name:
             language_query = language_query.filter(cls.topic_name == topic_name)
-
+        print("Translation Query", language_query)
         fetch_result: Tuple[
             Sequence[ExplorationOpportunitySummaryModel],
             datastore_services.Cursor,
             bool
         ] = language_query.fetch_page(page_size, start_cursor=start_cursor)
         results, cursor, _ = fetch_result
-
+        print("Translation Results: ", results)
         # TODO(#13462): Refactor this so that we don't do the lookup.
         # Do a forward lookup so that we can know if there are more values.
         fetch_result = (
@@ -188,6 +188,11 @@ class SkillOpportunityModel(base_models.BaseModel):
     # The number of questions associated with this opportunity's skill.
     question_count = (
         datastore_services.IntegerProperty(required=True, indexed=True))
+    
+    topic_id = datastore_services.StringProperty(required=True, indexed=True)
+    topic_name = datastore_services.StringProperty(required=True, indexed=True)
+
+    id: str = datastore_services.StringProperty(required=True, indexed=True)
 
     @staticmethod
     def get_deletion_policy() -> base_models.DELETION_POLICY:
@@ -204,15 +209,18 @@ class SkillOpportunityModel(base_models.BaseModel):
     def get_export_policy(cls) -> Dict[str, base_models.EXPORT_POLICY]:
         """Model doesn't contain any data directly corresponding to a user."""
         return dict(super(cls, cls).get_export_policy(), **{
+            'topic_id': base_models.EXPORT_POLICY.NOT_APPLICABLE,
+            'topic_name': base_models.EXPORT_POLICY.NOT_APPLICABLE,
             'skill_description': base_models.EXPORT_POLICY.NOT_APPLICABLE,
-            'question_count': base_models.EXPORT_POLICY.NOT_APPLICABLE
+            'question_count': base_models.EXPORT_POLICY.NOT_APPLICABLE, 
+            'id': base_models.EXPORT_POLICY.NOT_APPLICABLE
         })
 
     # TODO(#13523): Change the return value of the function below from
     # tuple(list, str|None, bool) to a domain object.
     @classmethod
     def get_skill_opportunities(
-        cls, page_size: int, urlsafe_start_cursor: Optional[str]
+        cls, page_size: int, urlsafe_start_cursor: Optional[str], topic_name: Optional[str]
     ) -> Tuple[Sequence[SkillOpportunityModel], Optional[str], bool]:
         """Returns a list of skill opportunities available for adding questions.
 
@@ -238,8 +246,20 @@ class SkillOpportunityModel(base_models.BaseModel):
         """
         start_cursor = datastore_services.make_cursor(
             urlsafe_cursor=urlsafe_start_cursor)
-
+        
         created_on_query = cls.get_all().order(cls.created_on)
+        print("Topic Name: ", topic_name)
+        if topic_name:
+            created_on_query = created_on_query.filter(cls.topic_name == topic_name)
+        # skill_ids = ["3VaGVsGNU5Y0"]
+        # if skill_ids:
+        #     created_on_query = created_on_query.filter(
+        #         # Here we use MyPy ignore because of mypy check error
+        #         # str doesn't support IN.
+        #         datastore_services.any_of(cls.id.IN(skill_ids))) # type: ignore[attr-defined]
+
+        print("QUERY:", created_on_query)
+
         fetch_result: Tuple[
             Sequence[SkillOpportunityModel], datastore_services.Cursor, bool
         ] = created_on_query.fetch_page(page_size, start_cursor=start_cursor)
@@ -250,6 +270,7 @@ class SkillOpportunityModel(base_models.BaseModel):
             page_size + 1, start_cursor=start_cursor)
         plus_one_query_models, _, _ = fetch_result
         more_results = len(plus_one_query_models) == page_size + 1
+        print("QUERY_RESULT", query_models)
         # The urlsafe returns bytes and we need to decode them to string.
         return (
             query_models,

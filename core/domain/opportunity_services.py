@@ -730,11 +730,12 @@ def get_skill_opportunity_from_model(
         SkillOpportunity. The corresponding SkillOpportunity object.
     """
     return opportunity_domain.SkillOpportunity(
-        model.id, model.skill_description, model.question_count)
+        model.id, model.skill_description, model.question_count, model.topic_name)
 
 
 def get_skill_opportunities(
-    cursor: Optional[str]
+    cursor: Optional[str], 
+    topic_name: Optional[str],
 ) -> Tuple[
     List[opportunity_domain.SkillOpportunity], Optional[str], bool
 ]:
@@ -756,9 +757,10 @@ def get_skill_opportunities(
                 this batch. If False, there are no further results after
                 this batch.
     """
+    print("Fetching skill opportunitys with topic_name: ", topic_name)
     skill_opportunity_models, cursor, more = (
         opportunity_models.SkillOpportunityModel
-        .get_skill_opportunities(constants.OPPORTUNITIES_PAGE_SIZE, cursor))
+        .get_skill_opportunities(constants.OPPORTUNITIES_PAGE_SIZE, cursor, topic_name))
     opportunities = []
     for skill_opportunity_model in skill_opportunity_models:
         skill_opportunity = (
@@ -781,6 +783,7 @@ def get_skill_opportunities_by_ids(
         opportunity id and values representing the SkillOpportunity
         domain objects corresponding to the opportunity id if exist else None.
     """
+    print("Getting Skill opportunities by id")
     opportunities: Dict[
         str, Optional[opportunity_domain.SkillOpportunity]
     ] = {opportunity_id: None for opportunity_id in ids}

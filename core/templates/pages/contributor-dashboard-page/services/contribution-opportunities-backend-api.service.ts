@@ -110,9 +110,13 @@ export class ContributionOpportunitiesBackendApiService {
       opportunityDict.topic_name, opportunityDict.question_count);
   }
 
-  async fetchSkillOpportunitiesAsync(cursor: string):
+  async fetchSkillOpportunitiesAsync(topicName: string, cursor: string):
   Promise<SkillContributionOpportunities> {
+    topicName = (
+      topicName === AppConstants.TOPIC_SENTINEL_NAME_ALL ? '' : topicName);
+    console.log(topicName); 
     const params = {
+      topic_name: topicName,
       cursor: cursor
     };
 
@@ -122,9 +126,10 @@ export class ContributionOpportunitiesBackendApiService {
           opportunityType: AppConstants.OPPORTUNITY_TYPE_SKILL
         }
       ), { params }).toPromise().then(data => {
+      console.log("Data: ", data)
       const opportunities = data.opportunities.map(
         dict => this._getSkillOpportunityFromDict(dict));
-
+      console.log(opportunities)
       return {
         opportunities: opportunities,
         nextCursor: data.next_cursor,

@@ -102,7 +102,7 @@
               <div class="oppia-dashboard-topic-container">
                 <span class="oppia-dashboard-topic-container-label">Filter by Topic</span>
                 <translation-topic-selector class="oppia-topic-selector"
-                                            [activeTopicName]="topicName"
+                                            [activeTopicName]="translationTopicName"
                                             (setActiveTopicName)="onChangeTranslationTopic($event)">
                 </translation-topic-selector>
               </div>
@@ -140,7 +140,7 @@
               <div class="oppia-dashboard-topic-container" *ngIf="showTranslationTopicSelector()">
                 <div class="oppia-dashboard-topic-container-label" tabindex="0">Subject</div>
                 <translation-topic-selector class="oppia-topic-selector"
-                                            [activeTopicName]="topicName"
+                                            [activeTopicName]="translationTopicName"
                                             (setActiveTopicName)="onChangeTranslationTopic($event)">
                 </translation-topic-selector>
               </div>
@@ -148,8 +148,8 @@
                 *ngIf="showQuestionTopicSelector()">
                 <span class="oppia-dashboard-topic-container-label">Filter by Topic</span>
                 <question-topic-selector class="oppia-topic-selector"
-                                            [activeTopicName]="topicName"
-                                            (setActiveTopicName)="onChangeTranslationTopic($event)">
+                                            [activeTopicName]="questionTopicName"
+                                            (setActiveTopicName)="onChangeQuestionTopic($event)">
                 </question-topic-selector>
               </div>
             </div>
