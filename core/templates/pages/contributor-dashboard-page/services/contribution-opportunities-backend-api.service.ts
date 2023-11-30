@@ -107,14 +107,15 @@ export class ContributionOpportunitiesBackendApiService {
       opportunityDict: SkillOpportunityBackendDict): SkillOpportunity {
     return new SkillOpportunity(
       opportunityDict.id, opportunityDict.skill_description,
-      opportunityDict.topic_name, opportunityDict.question_count);
+      "Subtraction", opportunityDict.question_count);
   }
 
   async fetchSkillOpportunitiesAsync(topicName: string, cursor: string):
   Promise<SkillContributionOpportunities> {
     topicName = (
       topicName === AppConstants.TOPIC_SENTINEL_NAME_ALL ? '' : topicName);
-    console.log(topicName); 
+    console.log("contribution-opportunities-backend-api.service.ts\t Fetching from Backend with topicName: ", topicName); 
+    topicName = 'Subtraction'
     const params = {
       topic_name: topicName,
       cursor: cursor
@@ -129,7 +130,7 @@ export class ContributionOpportunitiesBackendApiService {
       console.log("Data: ", data)
       const opportunities = data.opportunities.map(
         dict => this._getSkillOpportunityFromDict(dict));
-      console.log(opportunities)
+      console.log("Opportunities:\n", opportunities)
       return {
         opportunities: opportunities,
         nextCursor: data.next_cursor,

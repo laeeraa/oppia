@@ -189,8 +189,8 @@ class SkillOpportunityModel(base_models.BaseModel):
     question_count = (
         datastore_services.IntegerProperty(required=True, indexed=True))
     
-    topic_id = datastore_services.StringProperty(required=True, indexed=True)
-    topic_name = datastore_services.StringProperty(required=True, indexed=True)
+    topic_id = datastore_services.StringProperty(required=False, indexed=True)
+    topic_name = datastore_services.StringProperty(required=False, indexed=True)
 
     id: str = datastore_services.StringProperty(required=True, indexed=True)
 
@@ -248,17 +248,11 @@ class SkillOpportunityModel(base_models.BaseModel):
             urlsafe_cursor=urlsafe_start_cursor)
         
         created_on_query = cls.get_all().order(cls.created_on)
-        print("Topic Name: ", topic_name)
+        print("/storage/opportunity/gae_models.py SkillOpportunityModel: Topic Name: ", topic_name)
         if topic_name:
             created_on_query = created_on_query.filter(cls.topic_name == topic_name)
-        # skill_ids = ["3VaGVsGNU5Y0"]
-        # if skill_ids:
-        #     created_on_query = created_on_query.filter(
-        #         # Here we use MyPy ignore because of mypy check error
-        #         # str doesn't support IN.
-        #         datastore_services.any_of(cls.id.IN(skill_ids))) # type: ignore[attr-defined]
 
-        print("QUERY:", created_on_query)
+        print("/storage/opportunity/gae_models.py SkillOpportunityModel:\n QUERY:\n", created_on_query)
 
         fetch_result: Tuple[
             Sequence[SkillOpportunityModel], datastore_services.Cursor, bool
@@ -270,7 +264,7 @@ class SkillOpportunityModel(base_models.BaseModel):
             page_size + 1, start_cursor=start_cursor)
         plus_one_query_models, _, _ = fetch_result
         more_results = len(plus_one_query_models) == page_size + 1
-        print("QUERY_RESULT", query_models)
+        print("QUERY_RESULT: \n", query_models)
         # The urlsafe returns bytes and we need to decode them to string.
         return (
             query_models,

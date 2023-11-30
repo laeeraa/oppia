@@ -582,6 +582,9 @@ def get_translation_opportunities(
                 language_code: exp_id_to_in_review_count[opportunity_summary.id]
             }
         opportunity_summaries.append(opportunity_summary)
+    print("core/controllers/contributor_dashboard.py Translation Opportunities: ", opportunity_summaries)
+    print("core/controllers/contributor_dashboard.py Translation next_cursor: ", cursor)
+    print("core/controllers/contributor_dashboard.py Translation more: ", more)
     return opportunity_summaries, cursor, more
 
 
@@ -729,8 +732,12 @@ def get_skill_opportunity_from_model(
     Returns:
         SkillOpportunity. The corresponding SkillOpportunity object.
     """
+    if model.topic_name: 
+        topic_name == model.topic_name
+    else: 
+        topic_name = None
     return opportunity_domain.SkillOpportunity(
-        model.id, model.skill_description, model.question_count, model.topic_name)
+        model.id, model.skill_description, model.question_count, topic_name)
 
 
 def get_skill_opportunities(
@@ -757,7 +764,7 @@ def get_skill_opportunities(
                 this batch. If False, there are no further results after
                 this batch.
     """
-    print("Fetching skill opportunitys with topic_name: ", topic_name)
+    print("core/domain/opportunity_services.py: Fetching skill opportunitys with topic_name: ", topic_name)
     skill_opportunity_models, cursor, more = (
         opportunity_models.SkillOpportunityModel
         .get_skill_opportunities(constants.OPPORTUNITIES_PAGE_SIZE, cursor, topic_name))
@@ -766,7 +773,9 @@ def get_skill_opportunities(
         skill_opportunity = (
             get_skill_opportunity_from_model(skill_opportunity_model))
         opportunities.append(skill_opportunity)
+    print("core/domain/opportunity_services.py:\t Opportunities: ", opportunities)
     return opportunities, cursor, more
+
 
 
 def get_skill_opportunities_by_ids(
@@ -821,7 +830,8 @@ def create_skill_opportunity(skill_id: str, skill_description: str) -> None:
     skill_opportunity = opportunity_domain.SkillOpportunity(
         skill_id=skill_id,
         skill_description=skill_description,
-        question_count=len(questions)
+        question_count=len(questions), 
+        topic_name="Subtraction"
     )
     _save_skill_opportunities([skill_opportunity])
 

@@ -147,8 +147,7 @@ class ContributionOpportunitiesHandler(
 
         if opportunity_type == constants.OPPORTUNITY_TYPE_SKILL:
             topic_name = self.normalized_request.get('topic_name')
-            print("\n\ntopic_name: ", topic_name)
-            topic_name="Subtraction"
+            print("controllers/contributor_dashboard.py:\t topic_name: ", topic_name)
             skill_opportunities, next_cursor, more = (
                 self._get_skill_opportunities_with_corresponding_topic_name(
                     topic_name, search_cursor))
@@ -176,7 +175,7 @@ class ContributionOpportunitiesHandler(
         self.render_json(self.values)
 
     def _get_skill_opportunities_with_corresponding_topic_name(
-        self,         
+        self,     
         topic_name: Optional[str],
         cursor: Optional[str]
     ) -> Tuple[
@@ -204,40 +203,57 @@ class ContributionOpportunitiesHandler(
         # We want to focus attention on lessons that are part of a classroom.
         # See issue #12221.
         skill_opportunities = []
-        topic_name = None
-        if(topic_name): 
-            topic = topic_fetchers.get_topic_by_name(topic_name)
-            print("Topic fetched: ", topic)
+        print("controllers/contributor_dashboard.py: Topic name in get_skill_opportunities_with_topic_name: ", topic_name)
+        # if topic_name:
+        #     topic = topic_fetchers.get_topic_by_name(topic_name)
 
-            ids = []
-            if (topic): 
-                ids =  topic.get_all_skill_ids()
-                skill_opportunities = opportunity_services.get_skill_opportunities_by_ids(ids)
-                print(skill_opportunities)
-        else: 
-            classroom_topic_ids = []
-            for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
-                classroom_topic_ids.extend(classroom_dict['topic_ids'])
-            classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
-            # Associate each skill with one classroom topic name.
-            # TODO(#8912): Associate each skill/skill opportunity with all linked
-            # topics.
-            classroom_topic_skill_id_to_topic_name = {}
-            for topic in classroom_topics:
-                if topic is None:
-                    continue
-                for skill_id in topic.get_all_skill_ids():
-                    classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
-            
-            skill_opportunities, cursor, more = (
+        #     ids = []
+        #     if topic:
+        #         ids =  topic.get_all_skill_ids()
+        #         skill_opportunities = opportunity_services.get_skill_opportunities_by_ids(ids)
+        #         print(skill_opportunities)
+        # else: 
+        #     classroom_topic_ids = []
+        #     for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
+        #         classroom_topic_ids.extend(classroom_dict['topic_ids'])
+        #     classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
+        #     # Associate each skill with one classroom topic name.
+        #     # TODO(#8912): Associate each skill/skill opportunity with all linked
+        #     # topics.
+        #     classroom_topic_skill_id_to_topic_name = {}
+        #     for topic in classroom_topics:
+        #         if topic is None:
+        #             continue
+        #         for skill_id in topic.get_all_skill_ids():
+        #             classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
+
+        classroom_topic_ids = []
+        for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
+            classroom_topic_ids.extend(classroom_dict['topic_ids'])
+        classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
+        # Associate each skill with one classroom topic name.
+        # TODO(#8912): Associate each skill/skill opportunity with all linked
+        # topics.
+        classroom_topic_skill_id_to_topic_name = {}
+        for topic in classroom_topics:
+            if topic is None:
+                continue
+            for skill_id in topic.get_all_skill_ids():
+                classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
+
+        skill_opportunities, cursor, more = (
                 opportunity_services.get_skill_opportunities(cursor, topic_name))
-        
+        print("core/controllers/contributor_dashboard.py 1 Skillopportunities: ", skill_opportunities)
+        print("core/controllers/contributor_dashboard.py 1 cursor: ", cursor)
+        print("core/controllers/contributor_dashboard.py 1 more: ", more)
+
+
         opportunities: List[ClientSideSkillOpportunityDict] = []
         # Fetch opportunities until we have at least a page's worth that
         # correspond to a classroom or there are no more opportunities.
         while len(opportunities) < constants.OPPORTUNITIES_PAGE_SIZE:
             for skill_opportunity in skill_opportunities:
-                print(skill_opportunity)
+                print("core/controllers/contributor_dashboard.py: ", skill_opportunity)
                 if (
                         skill_opportunity.id
                         in classroom_topic_skill_id_to_topic_name):
@@ -252,20 +268,25 @@ class ContributionOpportunitiesHandler(
                         'question_count': skill_opportunity_dict[
                             'question_count'
                         ],
-                        'topic_name': (
-                            classroom_topic_skill_id_to_topic_name[
-                                skill_opportunity.id]
-                            )
+                        'topic_name': skill_opportunity_dict[
+                            'topic_name'
+                        ],
                     }
+                    print("ClientSide Skill Dict", client_side_skill_opportunity_dict)
                     opportunities.append(client_side_skill_opportunity_dict)
             if (
                     not more or
                     len(opportunities) >= constants.OPPORTUNITIES_PAGE_SIZE):
                 break
-            if( not topic_name): 
-                skill_opportunities, cursor, more = (
-                    opportunity_services.get_skill_opportunities(cursor, topic_name))
-            return opportunities, cursor, more
+
+            skill_opportunities, cursor, more = (
+                 opportunity_services.get_skill_opportunities(cursor, topic_name))
+            
+        print("core/controllers/contributor_dashboard.py 2 opportunities: ", opportunities)
+        print("core/controllers/contributor_dashboard.py 2 cursor: ", cursor)
+        print("core/controllers/contributor_dashboard.py 2 more: ", more)
+
+        return opportunities, cursor, more
 
     def _get_translation_opportunity_dicts(
         self,
@@ -303,6 +324,8 @@ class ContributionOpportunitiesHandler(
             opportunity_services.get_translation_opportunities(
                 language_code, topic_name, search_cursor))
         opportunity_dicts = [opp.to_dict() for opp in opportunities]
+
+
         return opportunity_dicts, next_cursor, more
 
 
