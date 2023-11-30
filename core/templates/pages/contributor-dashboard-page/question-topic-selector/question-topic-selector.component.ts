@@ -51,7 +51,8 @@ export class QuestionTopicSelectorComponent implements OnInit {
       .fetchTranslatableTopicNamesAsync()
       .then((topicNames) => {
         this.options = topicNames;
-      });
+        this.options.unshift("All");
+      });    
   }
 
   toggleDropdown(): void {

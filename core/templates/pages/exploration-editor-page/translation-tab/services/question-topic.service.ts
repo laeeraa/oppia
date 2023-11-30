@@ -54,6 +54,7 @@ export class QuestionTopicService {
             'Invalid active topic name: ' + newActiveTopicName);
           return;
         }
+        if (newActiveTopicName == 'All') this.activeTopicName = undefined;
         this.activeTopicName = newActiveTopicName;
         this._activeTopicChangedEventEmitter.emit();
       });

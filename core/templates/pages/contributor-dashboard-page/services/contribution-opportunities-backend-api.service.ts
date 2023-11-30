@@ -115,7 +115,6 @@ export class ContributionOpportunitiesBackendApiService {
     topicName = (
       topicName === AppConstants.TOPIC_SENTINEL_NAME_ALL ? '' : topicName);
     console.log("contribution-opportunities-backend-api.service.ts\t Fetching from Backend with topicName: ", topicName); 
-    topicName = 'Subtraction'
     const params = {
       topic_name: topicName,
       cursor: cursor
