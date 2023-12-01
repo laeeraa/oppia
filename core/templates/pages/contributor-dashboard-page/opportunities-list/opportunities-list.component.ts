@@ -25,6 +25,7 @@ import { ContributionOpportunitiesService } from '../services/contribution-oppor
 import { ExplorationOpportunity } from '../opportunities-list-item/opportunities-list-item.component';
 import { AppConstants } from 'app.constants';
 import { Subscription } from 'rxjs';
+import { QuestionTopicService } from 'pages/exploration-editor-page/translation-tab/services/question-topic.service';
 
 type ExplorationOpportunitiesFetcherFunction = () => Promise<{
   opportunitiesDicts: ExplorationOpportunity[];
@@ -70,7 +71,8 @@ export class OpportunitiesListComponent {
     private readonly contributionOpportunitiesService:
       ContributionOpportunitiesService,
     private readonly translationLanguageService: TranslationLanguageService,
-    private readonly translationTopicService: TranslationTopicService) {
+    private readonly translationTopicService: TranslationTopicService,
+    private readonly questionTopicService: QuestionTopicService) {
     this.init();
   }
 
@@ -81,6 +83,10 @@ export class OpportunitiesListComponent {
 
     this.directiveSubscriptions.add(
       this.translationTopicService.onActiveTopicChanged.subscribe(
+        () => this.ngOnInit()));
+    
+    this.directiveSubscriptions.add(
+      this.questionTopicService.onActiveTopicChanged.subscribe(
         () => this.ngOnInit()));
 
     this.directiveSubscriptions.add(

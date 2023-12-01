@@ -128,26 +128,6 @@ export class QuestionOpportunitiesComponent implements OnInit {
     });
   }
 
-  loadMoreOpportunities(): Promise<{
-    opportunitiesDicts: Opportunity[];
-    more: boolean;
-  }> {
-    return (
-      this.contributionOpportunitiesService
-        .getMoreSkillOpportunitiesAsync(this.questionTopicService.getActiveTopicName()).then(
-          this.getPresentableOpportunitiesData.bind(this)));
-  }
-
-  loadOpportunities(): Promise<{
-    opportunitiesDicts: Opportunity[];
-    more: boolean;
-  }> {
-    return (
-      this.contributionOpportunitiesService
-        .getSkillOpportunitiesAsync(this.questionTopicService.getActiveTopicName()).then(
-          this.getPresentableOpportunitiesData.bind(this)));
-  }
-
   onClickSuggestQuestionButton(skillId: string): void {
     if (!this.userIsLoggedIn) {
       this.contributionOpportunitiesService.showRequiresLoginModal();
@@ -179,6 +159,26 @@ export class QuestionOpportunitiesComponent implements OnInit {
     this.userService.getUserInfoAsync().then((userInfo) => {
       this.userIsLoggedIn = userInfo.isLoggedIn();
     });
+  }
+
+  async loadMoreOpportunitiesAsync(): Promise<{
+    opportunitiesDicts: Opportunity[];
+    more: boolean;
+  }> {
+    return (
+      this.contributionOpportunitiesService
+        .getMoreSkillOpportunitiesAsync(this.questionTopicService.getActiveTopicName()).then(
+          this.getPresentableOpportunitiesData.bind(this)));
+  }
+
+  async loadOpportunitiesAsync(): Promise<{
+    opportunitiesDicts: Opportunity[];
+    more: boolean;
+  }> {
+    return (
+      this.contributionOpportunitiesService
+        .getSkillOpportunitiesAsync(this.questionTopicService.getActiveTopicName()).then(
+          this.getPresentableOpportunitiesData.bind(this)));
   }
 }
 
