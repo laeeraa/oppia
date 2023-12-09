@@ -19,29 +19,32 @@
 export interface SkillOpportunityBackendDict {
   'id': string;
   'skill_description': string;
-  'topic_name': string;
+  'topic_name': string[] | null;
+  'topic_id': string[] | null; 
   'question_count': number;
 }
 
 export class SkillOpportunity {
   id: string;
   skillDescription: string;
-  topicName: string;
+  topicName: string[];
+  topicId: string[];
   questionCount: number;
 
   constructor(
-      skillId: string, skillDescription: string, topicName: string,
+      skillId: string, skillDescription: string, topicName: string[], topicId: string[],
       questionCount: number) {
     this.id = skillId;
     this.skillDescription = skillDescription;
     this.topicName = topicName;
+    this.topicId = topicId; 
     this.questionCount = questionCount;
   }
 
   static createFromBackendDict(
       backendDict: SkillOpportunityBackendDict): SkillOpportunity {
     return new SkillOpportunity(
-      backendDict.id, backendDict.skill_description, backendDict.topic_name,
+      backendDict.id, backendDict.skill_description, backendDict.topic_id, backendDict.topic_name,
       backendDict.question_count);
   }
 
@@ -53,7 +56,7 @@ export class SkillOpportunity {
     return this.skillDescription;
   }
 
-  getOpportunitySubheading(): string {
+  getOpportunitySubheading(): string[] {
     return this.topicName;
   }
 

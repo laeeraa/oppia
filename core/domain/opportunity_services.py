@@ -24,7 +24,7 @@ import logging
 from core import feconf
 
 from core.constants import constants
-from core.domain import exp_domain
+from core.domain import config_domain, exp_domain
 from core.domain import exp_fetchers
 from core.domain import opportunity_domain
 from core.domain import question_fetchers
@@ -732,12 +732,14 @@ def get_skill_opportunity_from_model(
     Returns:
         SkillOpportunity. The corresponding SkillOpportunity object.
     """
+    print("core/domain/opportunity_services.py: ", model)
+    update_skill_opportunity_with_topics(model.id)
     if model.topic_name: 
         topic_name == model.topic_name
     else: 
         topic_name = None
     return opportunity_domain.SkillOpportunity(
-        model.id, model.skill_description, model.question_count, topic_name)
+        model.id, model.skill_description, model.question_count, topic_name, model.topic_id)
 
 
 def get_skill_opportunities(
@@ -806,7 +808,7 @@ def get_skill_opportunities_by_ids(
     return opportunities
 
 
-def create_skill_opportunity(skill_id: str, skill_description: str) -> None:
+def create_skill_opportunity(skill_id: str, skill_description: str, topic: [topic_domain.Topic] = [] ) -> None:
     """Creates a SkillOpportunityModel entity in the datastore.
 
     Args:
@@ -827,13 +829,50 @@ def create_skill_opportunity(skill_id: str, skill_description: str) -> None:
     questions, _ = (
         question_fetchers.get_questions_and_skill_descriptions_by_skill_ids(
             constants.MAX_QUESTIONS_PER_SKILL, [skill_id], 0))
+    topic_ids = []
+    topic_names = []
+    if(len(topic)): 
+        for t in topic: 
+            topic_ids.append(t.topic_id)
     skill_opportunity = opportunity_domain.SkillOpportunity(
         skill_id=skill_id,
         skill_description=skill_description,
         question_count=len(questions), 
-        topic_name="Subtraction"
+        topic_id = topic_ids,
+        topic_name = topic_names
     )
     _save_skill_opportunities([skill_opportunity])
+
+def update_skill_opportunity_with_topics(skill_id:str): 
+    skill_opportunity = _get_skill_opportunity(skill_id)
+    print("Id", skill_id)
+    print(skill_opportunity)
+
+    #fetch all classroom topics and check which ones are assosciated with the requested skill
+    classroom_topic_ids = []
+    for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
+        classroom_topic_ids.extend(classroom_dict['topic_ids'])
+    classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
+
+    classroom_topic_skill_id_to_topic_name = {}
+    classroom_topic_skill_id_to_topic_id = {}
+
+    for topic in classroom_topics:
+        if topic is None:
+            continue
+        for skill_id in topic.get_all_skill_ids():
+            classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
+            classroom_topic_skill_id_to_topic_id[skill_id] = topic.id
+
+    topic_name = [classroom_topic_skill_id_to_topic_name[skill_id]]
+    topic_id = [classroom_topic_skill_id_to_topic_id[skill_id]]
+
+    if skill_opportunity is not None and topic_name is not []:
+        skill_opportunity.topic_name = topic_name
+        skill_opportunity.topic_id = topic_id
+        _save_skill_opportunities([skill_opportunity])
+    print("Updated Skill Opportunity: ", skill_opportunity)
+
 
 
 def _save_skill_opportunities(
@@ -853,6 +892,8 @@ def _save_skill_opportunities(
             id=skill_opportunity.id,
             skill_description=skill_opportunity.skill_description,
             question_count=skill_opportunity.question_count,
+            topic_name = skill_opportunities.topic_name, 
+            topic_id = skill_opportunities.topic_id
         )
         skill_opportunity_models.append(model)
     opportunity_models.SkillOpportunityModel.update_timestamps_multi(

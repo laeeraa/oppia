@@ -36,7 +36,7 @@ import { QuestionTopicService } from 'pages/exploration-editor-page/translation-
 interface Opportunity {
   id: string;
   heading: string;
-  subheading: string;
+  subheading: string[];
   progressPercentage: string;
   actionButtonTitle: string;
 }

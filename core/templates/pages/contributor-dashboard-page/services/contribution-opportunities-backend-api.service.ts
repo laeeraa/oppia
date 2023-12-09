@@ -107,7 +107,7 @@ export class ContributionOpportunitiesBackendApiService {
       opportunityDict: SkillOpportunityBackendDict): SkillOpportunity {
     return new SkillOpportunity(
       opportunityDict.id, opportunityDict.skill_description,
-      "Subtraction", opportunityDict.question_count);
+      opportunityDict.topic_name, opportunityDict.topic_id, opportunityDict.question_count);
   }
 
   async fetchSkillOpportunitiesAsync(topicName: string, cursor: string):

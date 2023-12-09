@@ -53,13 +53,6 @@ ListOfContributorDashboardStatsDictTypes = Sequence[Union[
     suggestion_registry.QuestionReviewStatsFrontendDict
 ]]
 
-
-class ClientSideSkillOpportunityDict(opportunity_domain.SkillOpportunityDict):
-    """A dictionary representation of client side SkillOpportunity object."""
-
-    topic_name: str
-
-
 class ContributorDashboardPage(
     base.BaseHandler[Dict[str, str], Dict[str, str]]
 ):
@@ -179,7 +172,7 @@ class ContributionOpportunitiesHandler(
         topic_name: Optional[str],
         cursor: Optional[str]
     ) -> Tuple[
-        List[ClientSideSkillOpportunityDict], Optional[str], bool
+        List[opportunity_domain.SkillOpportunityDict], Optional[str], bool
     ]:
         """Returns a list of skill opportunities available for questions with
         a corresponding topic name.
@@ -204,42 +197,7 @@ class ContributionOpportunitiesHandler(
         # See issue #12221.
         skill_opportunities = []
         print("controllers/contributor_dashboard.py: Topic name in get_skill_opportunities_with_topic_name: ", topic_name)
-        # if topic_name:
-        #     topic = topic_fetchers.get_topic_by_name(topic_name)
 
-        #     ids = []
-        #     if topic:
-        #         ids =  topic.get_all_skill_ids()
-        #         skill_opportunities = opportunity_services.get_skill_opportunities_by_ids(ids)
-        #         print(skill_opportunities)
-        # else: 
-        #     classroom_topic_ids = []
-        #     for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
-        #         classroom_topic_ids.extend(classroom_dict['topic_ids'])
-        #     classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
-        #     # Associate each skill with one classroom topic name.
-        #     # TODO(#8912): Associate each skill/skill opportunity with all linked
-        #     # topics.
-        #     classroom_topic_skill_id_to_topic_name = {}
-        #     for topic in classroom_topics:
-        #         if topic is None:
-        #             continue
-        #         for skill_id in topic.get_all_skill_ids():
-        #             classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
-
-        classroom_topic_ids = []
-        for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
-            classroom_topic_ids.extend(classroom_dict['topic_ids'])
-        classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
-        # Associate each skill with one classroom topic name.
-        # TODO(#8912): Associate each skill/skill opportunity with all linked
-        # topics.
-        classroom_topic_skill_id_to_topic_name = {}
-        for topic in classroom_topics:
-            if topic is None:
-                continue
-            for skill_id in topic.get_all_skill_ids():
-                classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
 
         skill_opportunities, cursor, more = (
                 opportunity_services.get_skill_opportunities(cursor, topic_name))
@@ -248,32 +206,29 @@ class ContributionOpportunitiesHandler(
         print("core/controllers/contributor_dashboard.py 1 more: ", more)
 
 
-        opportunities: List[ClientSideSkillOpportunityDict] = []
+        opportunities: List[opportunity_domain.SkillOpportunityDict] = []
         # Fetch opportunities until we have at least a page's worth that
         # correspond to a classroom or there are no more opportunities.
         while len(opportunities) < constants.OPPORTUNITIES_PAGE_SIZE:
             for skill_opportunity in skill_opportunities:
                 print("core/controllers/contributor_dashboard.py: ", skill_opportunity)
-                if (
-                        skill_opportunity.id
-                        in classroom_topic_skill_id_to_topic_name):
-                    skill_opportunity_dict = skill_opportunity.to_dict()
-                    client_side_skill_opportunity_dict: (
-                        ClientSideSkillOpportunityDict
-                    ) = {
-                        'id': skill_opportunity_dict['id'],
-                        'skill_description': skill_opportunity_dict[
-                            'skill_description'
-                        ],
-                        'question_count': skill_opportunity_dict[
-                            'question_count'
-                        ],
-                        'topic_name': skill_opportunity_dict[
-                            'topic_name'
-                        ],
-                    }
-                    print("ClientSide Skill Dict", client_side_skill_opportunity_dict)
-                    opportunities.append(client_side_skill_opportunity_dict)
+                skill_opportunity_dict = skill_opportunity.to_dict()
+                client_side_skill_opportunity_dict: (
+                    opportunity_domain.SkillOpportunityDict
+                ) = {
+                    'id': skill_opportunity_dict['id'],
+                    'skill_description': skill_opportunity_dict[
+                        'skill_description'
+                    ],
+                    'question_count': skill_opportunity_dict[
+                        'question_count'
+                    ],
+                    'topic_name': skill_opportunity_dict[
+                        'topic_name'
+                    ],
+                }
+                print("ClientSide Skill Dict", client_side_skill_opportunity_dict)
+                opportunities.append(client_side_skill_opportunity_dict)
             if (
                     not more or
                     len(opportunities) >= constants.OPPORTUNITIES_PAGE_SIZE):

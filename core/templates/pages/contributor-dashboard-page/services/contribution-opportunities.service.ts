@@ -95,7 +95,6 @@ export class ContributionOpportunitiesService {
   }
 
   async getSkillOpportunitiesAsync(topicName: string): Promise<SkillOpportunitiesDict> {
-    console.log("in getSkillOpportunitiesAsync")
     return this._getSkillOpportunitiesAsync(topicName, '');
   }
 

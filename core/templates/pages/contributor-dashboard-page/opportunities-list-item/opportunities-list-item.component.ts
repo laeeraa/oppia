@@ -29,7 +29,7 @@ export interface ExplorationOpportunity {
   labelText: string;
   labelColor: string;
   progressPercentage: number;
-  subheading?: string;
+  subheading?: string | string[];
   inReviewCount: number;
   totalCount: number;
   translationsCount: number;
