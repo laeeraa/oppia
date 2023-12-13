@@ -110,6 +110,12 @@ def _create_topic(
     topic.version += 1
     generate_topic_summary(topic.id)
 
+    #add topic names & ids to each connected skill
+    skill_ids = topic.get_all_skill_ids()
+    for skill_id in skill_ids: 
+	    opportunity_services.add_topic_to_skill(topic.id, topic.abbreviated_name, skill_id)
+
+
 
 def does_topic_with_name_exist(topic_name: str) -> bool:
     """Checks if the topic with provided name exists.

@@ -834,12 +834,13 @@ def create_skill_opportunity(skill_id: str, skill_description: str, topic: [topi
     if(len(topic)): 
         for t in topic: 
             topic_ids.append(t.topic_id)
+    lambda_topics = lambda x: x if len(x) > 0 else None
     skill_opportunity = opportunity_domain.SkillOpportunity(
         skill_id=skill_id,
         skill_description=skill_description,
         question_count=len(questions), 
-        topic_id = topic_ids,
-        topic_name = topic_names
+        topic_id = lambda_topics(topic_ids),
+        topic_name = lambda_topics(topic_names),
     )
     _save_skill_opportunities([skill_opportunity])
 
@@ -873,6 +874,32 @@ def update_skill_opportunity_with_topics(skill_id:str):
         _save_skill_opportunities([skill_opportunity])
     print("Updated Skill Opportunity: ", skill_opportunity)
 
+def add_topic_to_skill(topic_id: str, topic_name:str, skill_id: str) -> None: 
+    skill_opportunity = _get_skill_opportunity(skill_id)
+    print(f"Add Topic{topic_name} to Skill Opportunity: {skill_opportunity}")
+    if skill_opportunity is not None:
+        index_id = skill_opportunity.topic_ids.index(topic_id)
+        index_name = skill_opportunity.topic_names.index(topic_name)
+        if index_id == -1 and index_name == -1:
+            skill_opportunity.topic_ids = skill_opportunity.topic_ids.append(index_id)
+            skill_opportunity.topic_names = skill_opportunity.topic_names.append(index_name)
+        _save_skill_opportunities([skill_opportunity])
+        print("New Opportunity", skill_opportunity)
+    
+
+def remove_topic_from_skill(topic_id:str, topic_name:str, skill_id:str) -> None: 
+    skill_opportunity = _get_skill_opportunity(skill_id)
+    print(f"Remove Topic{topic_name} to Skill Opportunity: {skill_opportunity}")
+    if skill_opportunity is not None:
+        index_id = skill_opportunity.topic_ids.index(topic_id)
+        index_name = skill_opportunity.topic_names.index(topic_name)
+        if index_id >= 0 and index_name >= 0:
+            skill_opportunity.topic_ids = skill_opportunity.topic_ids.pop(index_id)
+            skill_opportunity.topic_names = skill_opportunity.topic_names.pop(index_name)
+        _save_skill_opportunities([skill_opportunity])
+        print("New Opportunity", skill_opportunity)
+    
+
 
 
 def _save_skill_opportunities(
@@ -892,8 +919,8 @@ def _save_skill_opportunities(
             id=skill_opportunity.id,
             skill_description=skill_opportunity.skill_description,
             question_count=skill_opportunity.question_count,
-            topic_name = skill_opportunities.topic_name, 
-            topic_id = skill_opportunities.topic_id
+            topic_name = skill_opportunity.topic_name, 
+            topic_id = skill_opportunity.topic_id
         )
         skill_opportunity_models.append(model)
     opportunity_models.SkillOpportunityModel.update_timestamps_multi(
