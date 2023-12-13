@@ -189,8 +189,8 @@ class SkillOpportunityModel(base_models.BaseModel):
     question_count = (
         datastore_services.IntegerProperty(required=True, indexed=True))
     
-    topic_id = datastore_services.StringProperty(required=False, indexed=True)
-    topic_name = datastore_services.StringProperty(required=False, indexed=True)
+    topic_id = datastore_services.StringProperty(repeated=True, required=False, indexed=True)
+    topic_name = datastore_services.StringProperty(repeated=True, required=False, indexed=True)
 
     id: str = datastore_services.StringProperty(required=True, indexed=True)
 

@@ -735,7 +735,7 @@ def get_skill_opportunity_from_model(
     print("core/domain/opportunity_services.py: ", model)
     update_skill_opportunity_with_topics(model.id)
     if model.topic_name: 
-        topic_name == model.topic_name
+        topic_name = model.topic_name
     else: 
         topic_name = None
     return opportunity_domain.SkillOpportunity(
@@ -808,7 +808,7 @@ def get_skill_opportunities_by_ids(
     return opportunities
 
 
-def create_skill_opportunity(skill_id: str, skill_description: str, topic: [topic_domain.Topic] = [] ) -> None:
+def create_skill_opportunity(skill_id: str, skill_description: str, topic_ids: [str] = None, topic_names: [str] = None ) -> None:
     """Creates a SkillOpportunityModel entity in the datastore.
 
     Args:
@@ -829,11 +829,8 @@ def create_skill_opportunity(skill_id: str, skill_description: str, topic: [topi
     questions, _ = (
         question_fetchers.get_questions_and_skill_descriptions_by_skill_ids(
             constants.MAX_QUESTIONS_PER_SKILL, [skill_id], 0))
-    topic_ids = []
-    topic_names = []
-    if(len(topic)): 
-        for t in topic: 
-            topic_ids.append(t.topic_id)
+
+
     lambda_topics = lambda x: x if len(x) > 0 else None
     skill_opportunity = opportunity_domain.SkillOpportunity(
         skill_id=skill_id,
@@ -843,6 +840,7 @@ def create_skill_opportunity(skill_id: str, skill_description: str, topic: [topi
         topic_name = lambda_topics(topic_names),
     )
     _save_skill_opportunities([skill_opportunity])
+    print("Saved skill_opportunity with id: ", skill_id)
 
 def update_skill_opportunity_with_topics(skill_id:str): 
     skill_opportunity = _get_skill_opportunity(skill_id)
@@ -876,7 +874,7 @@ def update_skill_opportunity_with_topics(skill_id:str):
 
 def add_topic_to_skill(topic_id: str, topic_name:str, skill_id: str) -> None: 
     skill_opportunity = _get_skill_opportunity(skill_id)
-    print(f"Add Topic{topic_name} to Skill Opportunity: {skill_opportunity}")
+    print(f"Add Topic {topic_name} to Skill Opportunity with id: {skill_id}\n: {skill_opportunity}")
     if skill_opportunity is not None:
         index_id = skill_opportunity.topic_ids.index(topic_id)
         index_name = skill_opportunity.topic_names.index(topic_name)
@@ -926,7 +924,7 @@ def _save_skill_opportunities(
     opportunity_models.SkillOpportunityModel.update_timestamps_multi(
         skill_opportunity_models)
     opportunity_models.SkillOpportunityModel.put_multi(skill_opportunity_models)
-
+    print("Skill Opportunity pu multi, Model: ", skill_opportunity_models)
 
 def update_skill_opportunity_skill_description(
     skill_id: str, new_description: str

@@ -650,7 +650,8 @@ def _create_skill(
     committer_id: str,
     skill: skill_domain.Skill,
     commit_message: str,
-    commit_cmds: List[skill_domain.SkillChange]
+    commit_cmds: List[skill_domain.SkillChange],
+    topic_ids: [str] | None
 ) -> None:
     """Creates a new skill.
 
@@ -687,9 +688,21 @@ def _create_skill(
     model.commit(committer_id, commit_message, commit_cmd_dicts)
     skill.version += 1
     create_skill_summary(skill.id)
+    print(f"Topic_ids in skill_services._create_skill: {topic_ids}")
+    topic_names = []
+    if(topic_ids): 
+        topic_ids = topic_ids
+        for id in topic_ids: 
+            topic = topic_fetchers.get_topic_by_id(id)
+            if(topic): 
+                topic_names.append(topic.name)
+    print(f"Create skill opportunity, topic_ids: {topic_ids}, topic_names: {topic_names}")
+
     opportunity_services.create_skill_opportunity(
         skill.id,
-        skill.description)
+        skill.description, 
+        topic_ids, 
+        topic_names)
 
 
 def does_skill_with_description_exist(description: str) -> bool:
@@ -706,7 +719,7 @@ def does_skill_with_description_exist(description: str) -> bool:
     return existing_skill is not None
 
 
-def save_new_skill(committer_id: str, skill: skill_domain.Skill) -> None:
+def save_new_skill(committer_id: str, skill: skill_domain.Skill, topic_ids: [str] = None) -> None:
     """Saves a new skill.
 
     Args:
@@ -714,10 +727,11 @@ def save_new_skill(committer_id: str, skill: skill_domain.Skill) -> None:
         skill: Skill. Skill to be saved.
     """
     commit_message = 'New skill created.'
+    print("New skill created")
     _create_skill(
         committer_id, skill, commit_message, [skill_domain.SkillChange({
             'cmd': skill_domain.CMD_CREATE_NEW
-        })])
+        })], topic_ids)
 
 
 def apply_change_list(

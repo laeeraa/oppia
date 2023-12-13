@@ -736,7 +736,18 @@ def update_topic_and_subtopic_pages(
     if old_topic.name != updated_topic.name:
         opportunity_services.update_opportunities_with_new_topic_name(
             updated_topic.id, updated_topic.name)
+    
+    print(f"Updating all Skill Ids for topic: {old_topic.name}")
+    skill_ids_old = old_topic.get_all_skill_ids()
+    skill_ids_new = updated_topic.get_all_skill_ids()
 
+    for skill_id_old in skill_ids_old:
+        if not skill_id_old in skill_ids_new:
+            opportunity_services.remove_topic_from_skill(old_topic.id, old_topic.name, skill_id_old)
+    
+    for skill_id_new in skill_ids_new: 
+        if not skill_id_new in skill_ids_old: 
+            opportunity_services.add_topic_to_skill(updated_topic.id, updated_topic.name, skill_id_new)
 
 def delete_uncategorized_skill(
     user_id: str,
@@ -777,6 +788,7 @@ def add_uncategorized_skill(
         'cmd': 'add_uncategorized_skill_id',
         'new_uncategorized_skill_id': uncategorized_skill_id
     })]
+    print("Add uncategorized skill")
     update_topic_and_subtopic_pages(
         user_id, topic_id, change_list,
         'Added %s to uncategorized skill ids' % uncategorized_skill_id)

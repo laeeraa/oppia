@@ -586,14 +586,7 @@ class NewSkillHandler(
         files = self.normalized_payload['files']
 
         new_skill_id = skill_services.get_new_skill_id()
-        if linked_topic_ids is not None:
-            topics = topic_fetchers.get_topics_by_ids(linked_topic_ids)
-            for topic in topics:
-                if topic is None:
-                    raise self.InvalidInputException
-                topic_services.add_uncategorized_skill(
-                    self.user_id, topic.id, new_skill_id)
-
+        
         if skill_services.does_skill_with_description_exist(description):
             raise self.InvalidInputException(
                 'Skill description should not be a duplicate.')
@@ -604,9 +597,19 @@ class NewSkillHandler(
         skill.update_explanation(explanation_dict)
 
         image_filenames = skill_services.get_image_filenames_from_skill(skill)
+        
+        if linked_topic_ids is not None:
+            topics = topic_fetchers.get_topics_by_ids(linked_topic_ids)
+            print(topics)
+            for topic in topics:
+                if topic is None:
+                    raise self.InvalidInputException
+                topic_services.add_uncategorized_skill(
+                    self.user_id, topic.id, new_skill_id)
+            
+            skill_services.save_new_skill(self.user_id, skill, linked_topic_ids)
 
-        skill_services.save_new_skill(self.user_id, skill)
-
+        
         for filename in image_filenames:
             base64_image = files[filename]
             bytes_image = (
