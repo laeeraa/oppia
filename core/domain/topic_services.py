@@ -691,7 +691,7 @@ def update_topic_and_subtopic_pages(
     if topic_rights.topic_is_published and not commit_message:
         raise ValueError(
             'Expected a commit message, received none.')
-
+    print("Updating topic and subtopic page: ", topic_id)
     old_topic = topic_fetchers.get_topic_by_id(topic_id)
     (
         updated_topic, updated_subtopic_pages_dict,

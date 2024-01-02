@@ -733,7 +733,6 @@ def get_skill_opportunity_from_model(
         SkillOpportunity. The corresponding SkillOpportunity object.
     """
     print("core/domain/opportunity_services.py: ", model)
-    update_skill_opportunity_with_topics(model.id)
     if model.topic_name: 
         topic_name = model.topic_name
     else: 
@@ -842,36 +841,6 @@ def create_skill_opportunity(skill_id: str, skill_description: str, topic_ids: [
     _save_skill_opportunities([skill_opportunity])
     print("Saved skill_opportunity with id: ", skill_id)
 
-def update_skill_opportunity_with_topics(skill_id:str): 
-    skill_opportunity = _get_skill_opportunity(skill_id)
-    print("Id", skill_id)
-    print(skill_opportunity)
-
-    #fetch all classroom topics and check which ones are assosciated with the requested skill
-    classroom_topic_ids = []
-    for classroom_dict in config_domain.CLASSROOM_PAGES_DATA.value:
-        classroom_topic_ids.extend(classroom_dict['topic_ids'])
-    classroom_topics = topic_fetchers.get_topics_by_ids(classroom_topic_ids)
-
-    classroom_topic_skill_id_to_topic_name = {}
-    classroom_topic_skill_id_to_topic_id = {}
-
-    for topic in classroom_topics:
-        if topic is None:
-            continue
-        for skill_id in topic.get_all_skill_ids():
-            classroom_topic_skill_id_to_topic_name[skill_id] = topic.name
-            classroom_topic_skill_id_to_topic_id[skill_id] = topic.id
-
-    topic_name = [classroom_topic_skill_id_to_topic_name[skill_id]]
-    topic_id = [classroom_topic_skill_id_to_topic_id[skill_id]]
-
-    if skill_opportunity is not None and topic_name is not []:
-        skill_opportunity.topic_name = topic_name
-        skill_opportunity.topic_id = topic_id
-        _save_skill_opportunities([skill_opportunity])
-    print("Updated Skill Opportunity: ", skill_opportunity)
-
 def add_topic_to_skill(topic_id: str, topic_name:str, skill_id: str) -> None: 
     skill_opportunity = _get_skill_opportunity(skill_id)
     print(f"Add Topic {topic_name} to Skill Opportunity with id: {skill_id}\n: {skill_opportunity}")
@@ -937,6 +906,9 @@ def update_skill_opportunity_skill_description(
         new_description: str. The new skill_description.
     """
     skill_opportunity = _get_skill_opportunity(skill_id)
+    print("update skill description")
+    print(skill_opportunity)
+    print(skill_id)
     if skill_opportunity is not None:
         skill_opportunity.skill_description = new_description
         _save_skill_opportunities([skill_opportunity])
@@ -956,8 +928,22 @@ def _get_skill_opportunity(
         SkillOpportunity with the supplied skill_id, or None if it does not
         exist.
     """
+    skill_opportunity_models, cursor, more = (
+        opportunity_models.SkillOpportunityModel
+        .get_skill_opportunities(100, None, None))
+    print(skill_opportunity_models)
+    print("\n")
+    models = get_skill_opportunities_by_ids([skill_id])
+    print("\n")
+    print(models)
+    print("\n")
+    # skill_opportunity_models2, cursor, more = (
+    #     opportunity_models.SkillOpportunityModel
+    #     .get(skill_id))
+    #print(skill_opportunity_models2)
     skill_opportunity_model = (
-        opportunity_models.SkillOpportunityModel.get_by_id(skill_id))
+        opportunity_models.SkillOpportunityModel.get_by_skill_id(10, None, None, skill_id))
+    print("Get by id:", skill_opportunity_model)
     if skill_opportunity_model is not None:
         return get_skill_opportunity_from_model(skill_opportunity_model)
     return None
@@ -972,6 +958,7 @@ def delete_skill_opportunity(skill_id: str) -> None:
     """
     skill_opportunity_model = (
         opportunity_models.SkillOpportunityModel.get_by_id(skill_id))
+    print("Deleting skill opportunity: ", skill_opportunity_model)
     if skill_opportunity_model is not None:
         opportunity_models.SkillOpportunityModel.delete(skill_opportunity_model)
 

@@ -271,3 +271,41 @@ class SkillOpportunityModel(base_models.BaseModel):
             (cursor.urlsafe().decode('utf-8') if cursor else None),
             more_results
         )
+    def get_by_skill_id(cls, page_size: int, urlsafe_start_cursor: Optional[str], skill_id: Optional[str]
+    ) -> Tuple[Sequence[SkillOpportunityModel], Optional[str], bool]:
+        start_cursor = datastore_services.make_cursor(
+            urlsafe_cursor=urlsafe_start_cursor)
+        
+        created_on_query = cls.get_all().order(cls.created_on).filter(cls.id == skill_id)
+        print("/storage/opportunity/gae_models.py SkillOpportunityModel: Skill_id: ", skill_id)
+
+        print("/storage/opportunity/gae_models.py SkillOpportunityModel:\n QUERY:\n", created_on_query)
+
+        fetch_result: Tuple[
+            Sequence[SkillOpportunityModel], datastore_services.Cursor, bool
+        ] = created_on_query.fetch_page(page_size, start_cursor=start_cursor)
+        query_models, cursor, _ = fetch_result
+        # TODO(#13462): Refactor this so that we don't do the lookup.
+        # Do a forward lookup so that we can know if there are more values.
+        fetch_result = created_on_query.fetch_page(
+            page_size + 1, start_cursor=start_cursor)
+        plus_one_query_models, _, _ = fetch_result
+        more_results = len(plus_one_query_models) == page_size + 1
+        print("QUERY_RESULT: \n", query_models)
+        # The urlsafe returns bytes and we need to decode them to string.
+        return (
+            query_models,
+            (cursor.urlsafe().decode('utf-8') if cursor else None),
+            more_results
+        )
+        
+        #         entity: Optional[SELF_BASE_MODEL] = cls.get_by_id(entity_id)
+        # if entity and entity.deleted:
+        #     entity = None
+
+        # if strict and entity is None:
+        #     raise cls.EntityNotFoundError(
+        #         'Entity for class %s with id %s not found' %
+        #         (cls.__name__, entity_id))
+        # return entity
+    

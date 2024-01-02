@@ -399,6 +399,7 @@ class BaseModel(datastore_services.Model):
                     assert entity is not None
                     if entity.deleted:
                         entities[i] = None
+        print("entitites: ", entities)
         return entities
 
     def update_timestamps(self, update_last_updated_time: bool = True) -> None:
